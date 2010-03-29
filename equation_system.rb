@@ -60,7 +60,10 @@ class EquationSystem
     equations.map! do |eq|
       eq_hash = {}
       eq.gsub!(/[^0-9a-zA-Z=\+-]/, '')
-      eq.scan(/(-)?([\d\.]+)?([a-zA-Z])/) { |sign, number, variable| eq_hash[variable] = sign.to_s + (number || '1') }
+      eq.scan(/(-)?([\d\.]+)?([a-zA-Z])/) do |sign, number, variable|
+        eq_hash[variable] ||= 0
+        eq_hash[variable] += (sign.to_s + (number || '1')).to_f
+      end
       eq_hash[:equals] = eq.match(/=(-?[\d\.]+)\z/)[1]
       eq_hash
     end
@@ -103,4 +106,5 @@ if $0 == __FILE__
   puts EquationSystem.new([4, -6, 3, 9], [3, -5, 8, 22], [5, 4, -7, 25]).solution.inspect
   puts EquationSystem.new({'x' => 4, 'y' => -6, 'z' => 3, :equals => 9}, {'x' => 3, 'y' => -5, 'z' => 8, :equals => 22}, {'x' => 5, 'y' => 4, 'z' => -7, :equals => 25}).solution.inspect
   puts EquationSystem.new("4x - 6y + 3z = 9", "3x - 5y + 8z = 22", "5x + 4y - 7z = 25").solution.inspect
+  puts EquationSystem.new("4x - 5y + 3z - y = 9", "3x - 5y + 8z = 22", "5x + 4y - 7z = 25").solution.inspect
 end
