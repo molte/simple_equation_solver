@@ -59,15 +59,31 @@ class EquationSystem
   def from_string(*equations)
     equations.map! do |eq|
       eq_hash = {}
-      eq.gsub!(/[^0-9a-zA-Z=\+-]/, '')
-      eq.scan(/(-)?([\d\.]+)?([a-zA-Z])/) do |sign, number, variable|
-        eq_hash[variable] ||= 0
-        eq_hash[variable] += (sign.to_s + (number || '1')).to_f
-      end
-      eq_hash[:equals] = eq.match(/=(-?[\d\.]+)\z/)[1]
+      left, right = *eq.gsub(/[^0-9a-zA-Z=\+-]/, '').split('=')
+      
+      find_variables(left, eq_hash)
+      find_variables(right, eq_hash, true)
+      eq_hash[:equals] = find_constants(right) + find_constants(left, true)
+      
       eq_hash
     end
     from_hash(*equations)
+  end
+  
+  def find_variables(str, variables = {}, negate = false)
+    str.scan(/(-)?([\d\.]+)?([a-zA-Z])/) do |sign, number, variable|
+      variables[variable] ||= 0
+      variables[variable] += (sign.to_s + (number || '1')).to_f * (negate ? -1 : 1)
+    end
+    variables
+  end
+  
+  def find_constants(str, negate = false)
+    total = 0
+    str.scan(/(-?[\d\.]+)(?:[\+-]|\z)/) do |number, x|
+      total += number.to_f * (negate ? -1 : 1)
+    end
+    total
   end
   
   def from_hash(*equations)
@@ -106,5 +122,5 @@ if $0 == __FILE__
   puts EquationSystem.new([4, -6, 3, 9], [3, -5, 8, 22], [5, 4, -7, 25]).solution.inspect
   puts EquationSystem.new({'x' => 4, 'y' => -6, 'z' => 3, :equals => 9}, {'x' => 3, 'y' => -5, 'z' => 8, :equals => 22}, {'x' => 5, 'y' => 4, 'z' => -7, :equals => 25}).solution.inspect
   puts EquationSystem.new("4x - 6y + 3z = 9", "3x - 5y + 8z = 22", "5x + 4y - 7z = 25").solution.inspect
-  puts EquationSystem.new("4x - 5y + 3z - y = 9", "3x - 5y + 8z = 22", "5x + 4y - 7z = 25").solution.inspect
+  puts EquationSystem.new("4x - 5y + 3z - y = 9", "3x - 3y + 8z = 22 + 2y", "5x - 5 + 4y - 7z = 20").solution.inspect
 end
