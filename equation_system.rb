@@ -1,5 +1,10 @@
 require 'matrix'
 
+# The EquationSystem class is able to solve a system of n first-degree equations with n unknown variables.
+# Requirements:
+#  - The equations may only contain variables with coefficients (eg. 4z) and numbers.
+#  - All numbers should be rational, written with decimal-notation.
+#  - The only allowed operators are plus and minus (except the hidden multiplication sign between the coefficient and the variable).
 class EquationSystem
   def initialize(*equations)
     @coefficients, @variable_names, @values = case equations.first
@@ -39,6 +44,7 @@ class EquationSystem
     @variable_values = x
   end
   
+  # Uses Gaussian elimination to reduce the equations.
   def eliminate!
     @coefficients.column_size.times do |column|
       pivot = @coefficients[column, column]
@@ -56,6 +62,7 @@ class EquationSystem
     end
   end
   
+  # Parses equation strings into variable hashes.
   def from_string(*equations)
     equations.map! do |eq|
       eq_hash = {}
@@ -70,6 +77,7 @@ class EquationSystem
     from_hash(*equations)
   end
   
+  # Finds all variables with coefficients in a string and adds them to a hash.
   def find_variables(str, variables = {}, negate = false)
     str.scan(/(-)?([\d\.]+)?([a-zA-Z])/) do |sign, number, variable|
       variables[variable] ||= 0
@@ -78,6 +86,7 @@ class EquationSystem
     variables
   end
   
+  # Finds all numbers in a string and returns the sum.
   def find_constants(str, negate = false)
     total = 0
     str.scan(/(-?[\d\.]+)(?:[\+-]|\z)/) do |number, x|
@@ -86,6 +95,7 @@ class EquationSystem
     total
   end
   
+  # Parses variable hashes into martices.
   def from_hash(*equations)
     variable_names = equations.map { |eq| eq.keys }.flatten.uniq
     variable_names.delete(:equals)
@@ -100,6 +110,7 @@ class EquationSystem
     return Matrix[*equations], variable_names, Matrix.column_vector(values)
   end
   
+  # Parses variable arrays into matrices.
   def from_array(*equations)
     values = []
     equations.each do |eq|
@@ -115,6 +126,7 @@ class Matrix
   end
 end
 
+# Usage examples
 if $0 == __FILE__
   puts EquationSystem.new([1, 2, 1, 2], [3, 8, 1, 12], [0, 4, 1, 2]).solution.inspect
   puts EquationSystem.new({'x' => 1, 'y' => 2, 'z' => 1, :equals => 2}, {'x' => 3, 'y' => 8, 'z' => 1, :equals => 12}, {'y' => 4, 'z' => 1, :equals => 2}).solution.inspect

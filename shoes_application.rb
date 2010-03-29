@@ -1,12 +1,19 @@
 require 'equation_system'
 
-# x + 2y + z = 2
-# 3x + 8y + z = 12
-# 4y + z = 2
+# Example:
+# y + x + y + z = 2
+# 3x + 8y - 2 + z = 10
+# 4y = 2 - z
 
-Shoes.app(:title => 'Equation solver', :width => 600, :height => 300) do
+Shoes.app(:title => 'Equation solver', :width => 900, :height => 450) do
   stack(:margin => 10) do
-    para "Only simple ordered equations can be solved. Separate each equation in a system with a newline."
+    para <<-EOT
+The EquationSystem class is able to solve a system of n first-degree equations with n unknown variables.
+Requirements:
+ - The equations may only contain variables with coefficients (eg. 4z) and numbers.
+ - All numbers should be rational, written with decimal-notation.
+ - The only allowed operators are plus and minus (except the hidden multiplication sign between the coefficient and the variable).
+EOT
     @input_area = edit_box(:width => '90%')
     button('Solve equation system', :margin => [0, 10, 0, 10]) do
       begin
