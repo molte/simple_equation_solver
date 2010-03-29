@@ -16,7 +16,7 @@ end
 
 helpers do
   def solve_equation_system(input)
-    "Solution: " + EquationSystem.new(*input.split("\n")).solution.map { |name, value| "<var>#{name}</var> = #{value}" }.join(', ')
+    "Solution: <strong>" + EquationSystem.new(*input.split("\n")).solution.map { |name, value| "<var>#{name}</var> = #{value}" }.join(', ') + "</strong>"
   rescue
     "The equations could not be solved."
   end
