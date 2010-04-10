@@ -1,7 +1,9 @@
 require 'erb'
-require 'rubygems'
-require 'sinatra'
 require 'equation_system'
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+require 'sinatra'
 
 set(:app, __FILE__)
 
