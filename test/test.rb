@@ -1,9 +1,9 @@
 require 'test/unit'
 require File.join(File.dirname(__FILE__), '..', 'equation_system')
-require File.join(File.dirname(__FILE__), 'test_helpers')
+require File.join(File.dirname(__FILE__), 'test_helper')
 
 class EquationSolverTest < Test::Unit::TestCase
-  extend TestHelpers
+  extend TestHelper
   
   equation_system :simple do
     equation "a = 1 - b"
@@ -43,5 +43,12 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "x + y = 10"
     equation "(x + 2 - (5 + y)) = 5 - (2x - x)"
     solution 'x' => 6, 'y' => 4
+  end
+  
+  equation_system :with_unordered_rows do
+    equation "x + 2y + z = 2"
+    equation "5z = -10"
+    equation "2y - 2z = 6"
+    solution 'x' => 2, 'y' => 1, 'z' => -2
   end
 end

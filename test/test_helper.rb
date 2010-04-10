@@ -1,4 +1,4 @@
-module TestHelpers
+module TestHelper
   def equation_system(name, &block)
     tester = EquationSystemTest.new(name)
     tester.instance_eval(&block)

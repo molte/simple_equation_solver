@@ -51,7 +51,13 @@ class EquationSystem
   # Uses Gaussian elimination to reduce the equations.
   def eliminate!
     @coefficients.column_size.times do |column|
-      pivot = @coefficients[column, column]
+      i2 = column
+      while (pivot = @coefficients[column, column]).zero?
+        i2 += 1
+        raise "No more rows to exchange with to avoid a zero pivot." if @coefficients.row_size <= i2
+        @coefficients.permutate!(column, i2)
+        @values.permutate!(column, i2)
+      end
       
       (column + 1).upto(@coefficients.row_size - 1) do |row|
         target = @coefficients[row, column]
@@ -130,6 +136,14 @@ class EquationSystem
 end
 
 class Matrix
+  # Exchanges two rows of the matrix.
+  def permutate!(i1, i2)
+    row = @rows[i1]
+    @rows[i1] = @rows[i2]
+    @rows[i2] = row
+    return self
+  end
+  
   def []=(i, j, value)
     @rows[i][j] = value
   end
