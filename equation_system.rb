@@ -5,8 +5,13 @@ require 'matrix'
 #  - The equations may only contain variables with coefficients (eg. 4z) and numbers.
 #  - All numbers should be rational, written with decimal-notation.
 #  - The only allowed operators are plus and minus (except the hidden multiplication sign between the coefficient and the variable).
+# Requires ruby version 1.8.7 or greater.
 class EquationSystem
+  VariablePattern = /([\d\.]+)?([a-zA-Z])/
+  ConstantPattern = /([\d\.]+)/
+  
   def initialize(*equations)
+    raise "EquationSystem only works with ruby version 1.8.7 or greater." if RUBY_VERSION < "1.8.7"
     @coefficients, @variable_names, @values = case equations.first
     when String
       from_string(*equations)
@@ -23,17 +28,16 @@ class EquationSystem
   end
   
   private
+  # Solves the equations with elimination and back substitution.
   def solve!
     eliminate!
     
     # Ux = c
     u = @coefficients.to_a.transpose
-    c = @values.to_a.map { |v| v.first }
     x = Array.new(u.length)
+    c = @values.to_a.map { |v| v.first }
     
-    u.reverse.each_with_index do |column, index|
-      column_number = u.length - index - 1
-      
+    u.reverse.each_with_reversed_index do |column, column_number|
       x[column_number] = c[column_number] / column[column_number]
       
       column_number.times do |row_number|
@@ -64,35 +68,40 @@ class EquationSystem
   
   # Parses equation strings into variable hashes.
   def from_string(*equations)
-    equations.map! do |eq|
-      eq_hash = {}
-      left, right = *eq.gsub(/[^0-9a-zA-Z=\+-]/, '').split('=')
-      
-      find_variables(left, eq_hash)
-      find_variables(right, eq_hash, true)
-      eq_hash[:equals] = find_constants(right) + find_constants(left, true)
-      
-      eq_hash
-    end
-    from_hash(*equations)
+    from_hash *equations.map { |eq| parse_equation(eq) }
   end
   
-  # Finds all variables with coefficients in a string and adds them to a hash.
-  def find_variables(str, variables = {}, negate = false)
-    str.scan(/(-)?([\d\.]+)?([a-zA-Z])/) do |sign, number, variable|
-      variables[variable] ||= 0
-      variables[variable] += (sign.to_s + (number || '1')).to_f * (negate ? -1 : 1)
+  # Parses an equation into a variable hash.
+  def parse_equation(str)
+    left, right = *str.gsub(/[^0-9a-zA-Z()=+-]/, '').split('=')
+    parse_expression(right, parse_expression(left), true)
+  end
+  
+  # Parses an expression into a variable hash.
+  def parse_expression(str, variables = {}, negate = false)
+    nesting_level = [negate ? -1 : 1]
+    variables[:equals] ||= 0
+    
+    str.scan(/(\A|[+-])(\(?)(?:#{VariablePattern}|#{ConstantPattern})(\)*)(?=[+-]|\z)/) do |sign, open_paren, coefficient, variable, constant, close_paren|
+      negation = nesting_level[-1] * parse_sign(sign)
+      
+      if variable
+        variables[variable] ||= 0
+        variables[variable] += (coefficient || '1').to_f * negation
+      else
+        variables[:equals] -= constant.to_f * negation
+      end
+      
+      nesting_level << negation unless open_paren.empty?
+      nesting_level.pop(close_paren.length) unless close_paren.empty?
     end
+    
     variables
   end
   
-  # Finds all numbers in a string and returns the sum.
-  def find_constants(str, negate = false)
-    total = 0
-    str.scan(/(-?[\d\.]+)(?:[\+-]|\z)/) do |number, x|
-      total += number.to_f * (negate ? -1 : 1)
-    end
-    total
+  # Parses a plus or minus sign into integer multipliers.
+  def parse_sign(sign)
+    (sign == '-' ? -1 : 1)
   end
   
   # Parses variable hashes into martices.
@@ -126,13 +135,11 @@ class Matrix
   end
 end
 
-# Usage examples
-if $0 == __FILE__
-  puts EquationSystem.new([1, 2, 1, 2], [3, 8, 1, 12], [0, 4, 1, 2]).solution.inspect
-  puts EquationSystem.new({'x' => 1, 'y' => 2, 'z' => 1, :equals => 2}, {'x' => 3, 'y' => 8, 'z' => 1, :equals => 12}, {'y' => 4, 'z' => 1, :equals => 2}).solution.inspect
-  puts EquationSystem.new("x + 2y + z = 2", "3x + 8y + z = 12", "4y + z = 2").solution.inspect
-  puts EquationSystem.new([4, -6, 3, 9], [3, -5, 8, 22], [5, 4, -7, 25]).solution.inspect
-  puts EquationSystem.new({'x' => 4, 'y' => -6, 'z' => 3, :equals => 9}, {'x' => 3, 'y' => -5, 'z' => 8, :equals => 22}, {'x' => 5, 'y' => 4, 'z' => -7, :equals => 25}).solution.inspect
-  puts EquationSystem.new("4x - 6y + 3z = 9", "3x - 5y + 8z = 22", "5x + 4y - 7z = 25").solution.inspect
-  puts EquationSystem.new("4x - 5y + 3z - y = 9", "3x - 3y + 8z = 22 + 2y", "5x - 5 + 4y - 7z = 20").solution.inspect
+class Array
+  def each_with_reversed_index
+    self.each_with_index do |item, index|
+      reversed_index = self.length - index - 1
+      yield(item, reversed_index)
+    end
+  end
 end

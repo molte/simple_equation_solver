@@ -38,4 +38,10 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "u + 3v + 9w = 23"
     solution('u' => 5, 'v' => 3, 'w' => 1)
   end
+  
+  equation_system "with_parens" do
+    equation "x + y = 10"
+    equation "(x + 2 - (5 + y)) = 5 - (2x - x)"
+    solution('x' => 6, 'y' => 4)
+  end
 end
