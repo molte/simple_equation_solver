@@ -1,5 +1,5 @@
 require 'erb'
-require 'equation_system'
+require File.join(File.dirname(__FILE__), 'lib', 'equation_system')
 
 begin
   # Require the preresolved locked set of gems.

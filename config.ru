@@ -1,2 +1,2 @@
-require 'sinatra_application'
+require 'simple_equation_solver'
 run Sinatra::Application

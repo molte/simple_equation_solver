@@ -1,4 +1,5 @@
 require 'matrix'
+require File.join(File.dirname(__FILE__), 'core_extensions')
 
 # The EquationSystem class is able to solve a system of n first-degree equations with n unknown variables.
 # Requirements:
@@ -132,28 +133,5 @@ class EquationSystem
       values << eq.delete_at(-1)
     end
     return Matrix[*equations].map { |n| n.to_f }, ('a'..'z').to_a.first(equations.length), Matrix.column_vector(values.map { |n| n.to_f })
-  end
-end
-
-class Matrix
-  # Exchanges two rows of the matrix.
-  def permutate!(i1, i2)
-    row = @rows[i1]
-    @rows[i1] = @rows[i2]
-    @rows[i2] = row
-    return self
-  end
-  
-  def []=(i, j, value)
-    @rows[i][j] = value
-  end
-end
-
-class Array
-  def each_with_reversed_index
-    self.each_with_index do |item, index|
-      reversed_index = self.length - index - 1
-      yield(item, reversed_index)
-    end
   end
 end
