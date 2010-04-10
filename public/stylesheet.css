@@ -1,0 +1,61 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font: 13px/1.2 "Trebuchet MS", Arial, Helvetica, sans-serif;
+  margin: 20px;
+}
+
+p, hr, h2 {
+  margin-top: 15px;
+}
+
+li {
+  margin-top: 7px;
+}
+
+ul, ol {
+  padding-left: 20px;
+}
+
+textarea, pre, .solution, .error {
+  padding: 10px;
+  font: 13px/1.2 "Bitstream Vera Sans Mono", Monaco, Consolas, monospace;
+}
+
+input {
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #999;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+var {
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.solution {
+  background-color: #090;
+  color: #fff;
+}
+
+.error {
+  background-color: #c00;
+  color: #fff;
+}

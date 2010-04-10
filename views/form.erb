@@ -3,10 +3,12 @@
   <head>
     <title>Simple equation solver</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="/stylesheet.css">
   </head>
   <body>
+    <h1>Simple equation solver</h1>
     <p>This simple equation solver is able to solve a system of <var>n</var> first-degree equations with <var>n</var> unknown variables.</p>
-    <p>Requirements:</p>
+    <h2>Requirements:</h2>
     <ul>
       <li>The equations may only contain variables with coefficients (eg. 4<var>z</var>) and numbers.</li>
       <li>All numbers should be rational, written with decimal-notation.</li>
@@ -17,10 +19,10 @@
       <p><textarea name="equations" cols="100" rows="10"><%= params[:equations] %></textarea></p>
       <p><input type="submit" value="Solve!"></p>
     </form>
-    <p><%= @solution %></p>
+    <%= @solution %>
     
     <hr>
-    <p>Example:</p>
+    <h2>Example (copy and paste):</h2>
     <pre>4x - 5y + (3z - y) = 9
 3x - 3y + 8z = 22 + 2y
 5x - (5 - 4y + 7z) = 20</pre>
