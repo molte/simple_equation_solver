@@ -23,9 +23,22 @@ class EquationSystem
     end
   end
   
+  # Solves the equations and returns the solution as a hash.
   def solution
     solve!
+    raise "The equations could not be solved" unless finite_solution?
     return Hash[*[@variable_names, @variable_values].transpose.flatten]
+  end
+  
+  # Checks whether the solution is valid.
+  def valid_solution?
+    @coefficients * Matrix.column_vector(@variable_values) == @values
+  end
+  
+  # Checks whether the solution only consists of finite numbers.
+  def finite_solution?
+    @variable_values.each { |v| return false unless v.finite? }
+    return true
   end
   
   private
