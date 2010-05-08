@@ -13,7 +13,7 @@ class EquationSystem
   
   def initialize(*equations)
     raise "EquationSystem only works with ruby version 1.8.7 or greater." if RUBY_VERSION < "1.8.7"
-    @coefficients, @variable_names, @values = case equations.first
+    @equations, @variable_names = case equations.first
     when String
       from_string(*equations)
     when Hash
@@ -26,13 +26,14 @@ class EquationSystem
   # Solves the equations and returns the solution as a hash.
   def solution
     solve!
-    raise "The equations could not be solved" unless finite_solution?
+    raise "The equations could not be solved." unless finite_solution?
     return Hash[*[@variable_names, @variable_values].transpose.flatten]
   end
   
   # Checks whether the solution is valid.
   def valid_solution?
-    @coefficients * Matrix.column_vector(@variable_values) == @values
+    a, b = split_equations
+    a * Matrix.column_vector(@variable_values) == b
   end
   
   # Checks whether the solution only consists of finite numbers.
@@ -44,47 +45,54 @@ class EquationSystem
   private
   # Solves the equations with elimination and back substitution.
   def solve!
-    raise "The coefficients matrix must be regular" unless @coefficients.regular?
+    raise "The number of unkown does not match the number of equations." unless (@equations.column_size - 1) == @equations.row_size
+    raise "The equations are not linear indepdendent." unless @equations.rank == (@equations.column_size - 1)
+    
     eliminate!
-    
-    # Ux = c
-    u = @coefficients.to_a.transpose
-    x = Array.new(u.length)
-    c = @values.to_a.map { |v| v.first }
-    
-    u.reverse.each_with_reversed_index do |column, column_number|
-      x[column_number] = c[column_number] / column[column_number]
-      
-      column_number.times do |row_number|
-        c[row_number] -= column[row_number] * x[column_number]
-      end
-    end
-    
-    @variable_values = x
+    @variable_values = back_substitute
   end
   
   # Uses Gaussian elimination to reduce the equations.
   def eliminate!
-    @coefficients.column_size.times do |column|
-      i2 = column
-      while (pivot = @coefficients[column, column]).zero?
+    (@equations.column_size - 1).times do |j|
+      i2 = j
+      while (pivot = @equations[j, j]).zero?
         i2 += 1
-        raise "No more rows to exchange with to avoid a zero pivot." if @coefficients.row_size <= i2
-        @coefficients.permutate!(column, i2)
-        @values.permutate!(column, i2)
+        raise "No more rows to exchange with to avoid a zero pivot." if @equations.row_size <= i2
+        @equations.permutate!(j, i2)
       end
       
-      (column + 1).upto(@coefficients.row_size - 1) do |row|
-        target = @coefficients[row, column]
+      (j + 1).upto(@equations.row_size - 1) do |i|
+        target = @equations[i, j]
         factor = target / pivot
         
-        elimination_matrix = Matrix.identity(@coefficients.column_size)
-        elimination_matrix[row, column] = -factor
+        elimination_matrix = Matrix.identity(@equations.row_size)
+        elimination_matrix[i, j] = -factor
         
-        @coefficients = elimination_matrix * @coefficients
-        @values = elimination_matrix * @values
+        @equations = elimination_matrix * @equations
       end
     end
+  end
+  
+  # Uses back substitution to compute the variable values.
+  def back_substitute
+    # Ux = c
+    u = @equations.to_a.transpose
+    c = u.delete_at(-1)
+    x = Array.new(u.length)
+    
+    u.reverse.each_with_reversed_index do |column, j|
+      x[j] = c[j] / column[j]
+      j.times { |i| c[i] -= column[i] * x[j] }
+    end
+    return x
+  end
+  
+  # Splits the equations into the left and right-hand side. Returns them as matrices.
+  def split_equations
+    a = @equations.to_a.transpose
+    b = a.delete_at(-1)
+    return Matrix.rows(a.transpose), Matrix.column_vector(b)
   end
   
   # Parses equation strings into variable hashes.
@@ -130,22 +138,17 @@ class EquationSystem
     variable_names = equations.map { |eq| eq.keys }.flatten.uniq
     variable_names.delete(:equals)
     
-    values = []
     equations.map! do |eq|
-      values << eq.delete(:equals).to_f
       variable_names.each { |var| eq[var] ||= 0 }
-      eq.values.map { |n| n.to_f }
+      value = eq.delete(:equals).to_f
+      eq.values.map { |n| n.to_f } << value
     end
     
-    return Matrix[*equations], variable_names, Matrix.column_vector(values)
+    return Matrix[*equations], variable_names
   end
   
   # Parses variable arrays into matrices.
   def from_array(*equations)
-    values = []
-    equations.each do |eq|
-      values << eq.delete_at(-1)
-    end
-    return Matrix[*equations].map { |n| n.to_f }, ('a'..'z').to_a.first(equations.length), Matrix.column_vector(values.map { |n| n.to_f })
+    return Matrix[*equations].map { |n| n.to_f }, ('a'..'z').to_a.first(equations.length)
   end
 end
