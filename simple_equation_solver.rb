@@ -12,7 +12,7 @@ rescue LoadError
 end
 require 'sinatra'
 
-set(:app, __FILE__)
+set(:app_file, __FILE__)
 
 get '/' do
   erb :form
