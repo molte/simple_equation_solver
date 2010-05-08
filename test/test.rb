@@ -1,5 +1,5 @@
 require 'test/unit'
-require File.join(File.dirname(__FILE__), '..', 'equation_system')
+require File.join(File.dirname(__FILE__), '..', 'lib', 'equation_system')
 require File.join(File.dirname(__FILE__), 'test_helper')
 
 class EquationSolverTest < Test::Unit::TestCase
