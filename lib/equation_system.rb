@@ -44,6 +44,7 @@ class EquationSystem
   private
   # Solves the equations with elimination and back substitution.
   def solve!
+    raise "The coefficients matrix must be regular" unless @coefficients.regular?
     eliminate!
     
     # Ux = c

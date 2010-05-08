@@ -1,9 +1,7 @@
 class Matrix
   # Exchanges two rows of the matrix.
   def permutate!(i1, i2)
-    row = @rows[i1]
-    @rows[i1] = @rows[i2]
-    @rows[i2] = row
+    @rows[i1], @rows[i2] = @rows[i2], @rows[i1]
     return self
   end
   
