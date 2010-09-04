@@ -19,9 +19,9 @@ class EquationSolverTest < Test::Unit::TestCase
   end
   
   equation_system :hash do
-    equation 'x' => 4, 'y' => -6, 'z' => 3, :equals => 9
-    equation 'x' => 3, 'y' => -5, 'z' => 8, :equals => 22
-    equation 'x' => 5, 'y' => 4, 'z' => -7, :equals => 25
+    equation 'x' => 4, 'y' => -6, 'z' => 3, 1 => 9
+    equation 'x' => 3, 'y' => -5, 'z' => 8, 1 => 22
+    equation 'x' => 5, 'y' => 4, 'z' => -7, 1 => 25
     solution 'x' => 6, 'y' => 4, 'z' => 3
   end
   
@@ -50,5 +50,19 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "5z = -10"
     equation "2y - 2z = 6"
     solution 'x' => 2, 'y' => 1, 'z' => -2
+  end
+  
+  equation_system :with_multiple_solutions do
+    equation "x - y + z = 1"
+    equation "x + y - z = 2"
+    solution 'x' => 1.5, 'y' => {1 => 0.5, 'z' => 1}, 'z' => {}
+  end
+  
+  equation_system :homogeneous do
+    equation "-3a + b + c + d = 0"
+    equation "a - 3b + c + d = 0"
+    equation "a + b - 3c + d = 0"
+    equation "a + b + c - 3d = 0"
+    solution 'a' => {1 => 0.0, 'd' => 1.0}, 'b' => {1 => 0.0, 'd' => 1.0}, 'c' => {1 => 0.0, 'd' => 1.0}, 'd' => {}
   end
 end

@@ -1,5 +1,8 @@
 require 'matrix'
+require 'rubygems'
+require 'active_support/core_ext'
 require File.join(File.dirname(__FILE__), 'core_extensions')
+require File.join(File.dirname(__FILE__), 'variable')
 
 # The EquationSystem class is able to solve a system of n first-degree equations with n unknown variables.
 # Requirements:
@@ -13,7 +16,7 @@ class EquationSystem
   
   def initialize(*equations)
     raise "EquationSystem only works with ruby version 1.8.7 or greater." if RUBY_VERSION < "1.8.7"
-    @equations, @variable_names = case equations.first
+    @equations, @variables = case equations.first
     when String
       from_string(*equations)
     when Hash
@@ -25,67 +28,79 @@ class EquationSystem
   
   # Solves the equations and returns the solution as a hash.
   def solution
-    solve!
-    raise "The equations could not be solved." unless finite_solution?
-    return Hash[*[@variable_names, @variable_values].transpose.flatten]
+    solve! unless @solved
+    # raise "The equations could not be solved." unless finite_solution?
+    @variables
   end
   
   # Checks whether the solution is valid.
   def valid_solution?
     a, b = split_equations
-    a * Matrix.column_vector(@variable_values) == b
+    a * Matrix.column_vector(@variables.map(:value)) == b
   end
   
   # Checks whether the solution only consists of finite numbers.
   def finite_solution?
-    @variable_values.each { |v| return false unless v.finite? }
-    return true
+    @variables.map(:value).all? { |v| v[1].finite? }
+  end
+  
+  def consistent?
+    @equations.to_a.none? do |row|
+      row.to(-2).all?(&:zero?) && !row[-1].zero?
+    end
   end
   
   private
+  # Returns the number of equations in the system.
+  def m; @equations.row_size end
+  
+  # Returns the number of variables in the system.
+  def n; @equations.column_size - 1 end
+  
   # Solves the equations with elimination and back substitution.
   def solve!
-    raise "The number of unkown does not match the number of equations." unless (@equations.column_size - 1) == @equations.row_size
-    raise "The equations are not linear indepdendent." unless @equations.rank == (@equations.column_size - 1)
-    
     eliminate!
-    @variable_values = back_substitute
+    raise "The equations could not be solved." unless consistent?
+    back_substitute!
+    @solved = true
   end
   
-  # Uses Gaussian elimination to reduce the equations.
+  # Uses Gaussian elimination to reduce the equations to reduced row-echelon form.
   def eliminate!
-    (@equations.column_size - 1).times do |j|
-      i2 = j
-      while (pivot = @equations[j, j]).zero?
-        i2 += 1
-        raise "No more rows to exchange with to avoid a zero pivot." if @equations.row_size <= i2
-        @equations.permutate!(j, i2)
+    [m, n].min.times do |j|
+      eliminate_row!(j)
+    end
+  end
+  
+  def eliminate_row!(j)
+    (j...m).each do |p|
+        @equations.permutate!(j, p) && break unless @equations[p, j].zero?
+        return if (p + 1) == m
       end
       
-      (j + 1).upto(@equations.row_size - 1) do |i|
-        target = @equations[i, j]
-        factor = target / pivot
-        
-        elimination_matrix = Matrix.identity(@equations.row_size)
-        elimination_matrix[i, j] = -factor
-        
-        @equations = elimination_matrix * @equations
+      elimination_matrix = Matrix.identity(m)
+      elimination_matrix[j, j] = 1.0 / @equations[j, j]
+      
+      m.times do |q|
+        elimination_matrix[q, j] = -(@equations[q, j] / @equations[j, j]) if q != j
       end
-    end
+      
+      @equations = elimination_matrix * @equations
   end
   
   # Uses back substitution to compute the variable values.
-  def back_substitute
-    # Ux = c
-    u = @equations.to_a.transpose
-    c = u.delete_at(-1)
-    x = Array.new(u.length)
-    
-    u.reverse.each_with_reversed_index do |column, j|
-      x[j] = c[j] / column[j]
-      j.times { |i| c[i] -= column[i] * x[j] }
+  def back_substitute!
+    equations_without_zero_rows.each_with_index do |row, i|
+      @variables[i] += row[-1]
+      ((i + 1)...n).each do |j|
+        @variables[i] += {@variables[j].name => -row[j]} unless row[j].zero?
+      end
     end
-    return x
+  end
+  
+  # Returns the equations as a nested array excluding the all-zero rows.
+  def equations_without_zero_rows
+    @equations.to_a.reject { |row| row.all?(&:zero?) }
   end
   
   # Splits the equations into the left and right-hand side. Returns them as matrices.
@@ -109,7 +124,7 @@ class EquationSystem
   # Parses an expression into a variable hash.
   def parse_expression(str, variables = {}, negate = false)
     nesting_level = [negate ? -1 : 1]
-    variables[:equals] ||= 0
+    variables[1] ||= 0
     
     str.scan(/(\A|[+-])(\(?)(?:#{VariablePattern}|#{ConstantPattern})(\)*)(?=[+-]|\z)/) do |sign, open_paren, coefficient, variable, constant, close_paren|
       negation = nesting_level[-1] * parse_sign(sign)
@@ -118,7 +133,7 @@ class EquationSystem
         variables[variable] ||= 0
         variables[variable] += (coefficient || '1').to_f * negation
       else
-        variables[:equals] -= constant.to_f * negation
+        variables[1] -= constant.to_f * negation
       end
       
       nesting_level << negation unless open_paren.empty?
@@ -136,19 +151,20 @@ class EquationSystem
   # Parses variable hashes into martices.
   def from_hash(*equations)
     variable_names = equations.map { |eq| eq.keys }.flatten.uniq
-    variable_names.delete(:equals)
+    variable_names.delete(1)
     
     equations.map! do |eq|
-      variable_names.each { |var| eq[var] ||= 0 }
-      value = eq.delete(:equals).to_f
+      variable_names.each { |var| eq[var] ||= 0.0 }
+      value = eq.delete(1).to_f
       eq.values.map { |n| n.to_f } << value
     end
     
-    return Matrix[*equations], variable_names
+    return Matrix[*equations], variable_names.map { |name| Variable.new(name) }
   end
   
   # Parses variable arrays into matrices.
   def from_array(*equations)
-    return Matrix[*equations].map { |n| n.to_f }, ('a'..'z').to_a.first(equations.length)
+    return Matrix[*equations].map { |n| n.to_f },
+      ('a'..'z').to_a.first(equations[0].length - 1).map { |name| Variable.new(name) }
   end
 end

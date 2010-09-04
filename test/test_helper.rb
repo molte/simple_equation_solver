@@ -16,13 +16,14 @@ module TestHelper
     end
     
     def solution(variables)
-      @solution = variables
+      @expected_solution = variables.map { |k, v| Variable.new(k, v).to_hash }.inject(:merge)
     end
     
     def test(test_class)
       test_class.class_eval <<-EOT
         def test_#{@name}_equation_system
-          assert_equal(#{@solution.inspect}, EquationSystem.new(*#{@equations.inspect}).solution, "Equation system could not be solved.")
+          solution = EquationSystem.new(*#{@equations.inspect}).solution.map(&:to_hash).inject(:merge)
+          assert_equal(#{@expected_solution.inspect}, solution, "Equation system could not be solved.")
         end
       EOT
     end

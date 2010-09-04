@@ -9,12 +9,3 @@ class Matrix
     @rows[i][j] = value
   end
 end
-
-class Array
-  def each_with_reversed_index
-    self.each_with_index do |item, index|
-      reversed_index = self.length - index - 1
-      yield(item, reversed_index)
-    end
-  end
-end
