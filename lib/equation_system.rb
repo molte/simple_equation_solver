@@ -15,7 +15,7 @@ class EquationSystem
   ConstantPattern = /([\d\.]+)/
   
   def initialize(*equations)
-    raise "EquationSystem only works with ruby version 1.8.7." if RUBY_VERSION == "1.8.7"
+    raise "EquationSystem only works with ruby version 1.8.7." unless RUBY_VERSION == "1.8.7"
     @equations, @variables = case equations.first
     when String
       from_string(*equations)
