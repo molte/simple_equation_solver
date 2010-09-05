@@ -6,6 +6,7 @@ class Variable
     @value = (value.is_a?(Numeric) ? {1 => value.to_f} : value)
   end
   
+  # Returns a new variable as the sum of the current and given values.
   def +(addend)
     case addend
     when Numeric
@@ -16,6 +17,7 @@ class Variable
     end
   end
   
+  # Returns whether a value is given.
   def has_value?
     !value.empty?
   end
@@ -33,7 +35,9 @@ class Variable
   end
   
   private
+  # Returns an array of the constant followed by arrays of coefficient-symbol pairs.
   def sorted_value
-    @value.except(1).map(&:reverse).unshift(@value[1]).reject { |number, symbol| number.zero? }
+    symbol_format = lambda { |symbol, number| number == 1 ? symbol : (number == -1 ? "-#{symbol}" : [number, symbol]) }
+    @value.except(1).sort.map(&symbol_format).unshift(@value[1]).reject { |number, symbol| number.is_a?(Numeric) && number.zero? }.presence || [0.0]
   end
 end

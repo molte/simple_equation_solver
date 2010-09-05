@@ -4,7 +4,7 @@ require 'active_support/core_ext'
 require File.join(File.dirname(__FILE__), 'core_extensions')
 require File.join(File.dirname(__FILE__), 'variable')
 
-# The EquationSystem class is able to solve a system of n first-degree equations with n unknown variables.
+# The EquationSystem class is able to solve a system of m unordered first-degree linear equations with n unknown variables.
 # Requirements:
 #  - The equations may only contain variables with coefficients (eg. 4z) and numbers.
 #  - All numbers should be rational, written with decimal-notation.
@@ -29,25 +29,7 @@ class EquationSystem
   # Solves the equations and returns the solution as a hash.
   def solution
     solve! unless @solved
-    # raise "The equations could not be solved." unless finite_solution?
     @variables
-  end
-  
-  # Checks whether the solution is valid.
-  def valid_solution?
-    a, b = split_equations
-    a * Matrix.column_vector(@variables.map(:value)) == b
-  end
-  
-  # Checks whether the solution only consists of finite numbers.
-  def finite_solution?
-    @variables.map(:value).all? { |v| v[1].finite? }
-  end
-  
-  def consistent?
-    @equations.to_a.none? do |row|
-      row.to(-2).all?(&:zero?) && !row[-1].zero?
-    end
   end
   
   private
@@ -65,13 +47,14 @@ class EquationSystem
     @solved = true
   end
   
-  # Uses Gaussian elimination to reduce the equations to reduced row-echelon form.
+  # Uses the Gauss-Jordan algorithm to reduce the equations to reduced row-echelon form.
   def eliminate!
     [m, n].min.times do |j|
       eliminate_row!(j)
     end
   end
   
+  # Eliminates for the given column number.
   def eliminate_row!(j)
     (j...m).each do |p|
         @equations.permutate!(j, p) && break unless @equations[p, j].zero?
@@ -88,6 +71,14 @@ class EquationSystem
       @equations = elimination_matrix * @equations
   end
   
+  # Checks whether the system of equations is solvable.
+  # This method should only be called after elimination.
+  def consistent?
+    @equations.to_a.none? do |row|
+      row.to(-2).all?(&:zero?) && !row[-1].zero?
+    end
+  end
+  
   # Uses back substitution to compute the variable values.
   def back_substitute!
     equations_without_zero_rows.each_with_index do |row, i|
@@ -101,13 +92,6 @@ class EquationSystem
   # Returns the equations as a nested array excluding the all-zero rows.
   def equations_without_zero_rows
     @equations.to_a.reject { |row| row.all?(&:zero?) }
-  end
-  
-  # Splits the equations into the left and right-hand side. Returns them as matrices.
-  def split_equations
-    a = @equations.to_a.transpose
-    b = a.delete_at(-1)
-    return Matrix.rows(a.transpose), Matrix.column_vector(b)
   end
   
   # Parses equation strings into variable hashes.

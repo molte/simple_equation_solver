@@ -16,14 +16,20 @@ module TestHelper
     end
     
     def solution(variables)
-      @expected_solution = variables.map { |k, v| Variable.new(k, v).to_hash }.inject(:merge)
+      case variables
+      when Hash
+        @expected_solution_hash = variables.map { |k, v| Variable.new(k, v).to_hash }.inject(:merge)
+      when String
+        @expected_solution_string = variables
+      end
     end
     
     def test(test_class)
       test_class.class_eval <<-EOT
         def test_#{@name}_equation_system
-          solution = EquationSystem.new(*#{@equations.inspect}).solution.map(&:to_hash).inject(:merge)
-          assert_equal(#{@expected_solution.inspect}, solution, "Equation system could not be solved.")
+          solution = EquationSystem.new(*#{@equations.inspect}).solution
+          assert_equal(#{@expected_solution_hash.inspect}, solution.map(&:to_hash).inject(:merge), "Equation system could not be solved; hashes are not identical.")
+          assert_equal(#{@expected_solution_string.inspect}, solution.map(&:to_s).reject(&:blank?).join(", "), "Equation system could not be solved; strings are not identical.")
         end
       EOT
     end
