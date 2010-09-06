@@ -29,7 +29,7 @@ module TestHelper
         def test_#{@name}_equation_system
           solution = EquationSystem.new(*#{@equations.inspect}).solution
           assert_equal(#{@expected_solution_hash.inspect}, solution.map(&:to_hash).inject(:merge), "Equation system could not be solved; hashes are not identical.")
-          assert_equal(#{@expected_solution_string.inspect}, solution.map(&:to_s).reject(&:blank?).join(", "), "Equation system could not be solved; strings are not identical.")
+          assert_equal(#{@expected_solution_string.inspect}, solution.map(&:to_s).reject(&:blank?).sort.join(", "), "Equation system could not be solved; strings are not identical.")
         end
       EOT
     end
