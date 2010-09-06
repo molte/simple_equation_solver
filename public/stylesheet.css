@@ -50,6 +50,24 @@ var {
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
+.solution .fraction {
+  display: inline-block;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+.solution .fraction .numerator, .solution .fraction .denominator {
+  display: block;
+}
+
+.solution .fraction .divider {
+  display: none;
+}
+
+.solution .fraction .denominator {
+  border-top: 1px solid #fff;
+}
+
 .solution {
   background-color: #090;
   color: #fff;

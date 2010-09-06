@@ -27,7 +27,8 @@ class Variable
   end
   
   def to_html
-    self.to_s.gsub("-", "&minus;").gsub(/[a-zA-Z]/, "<var>\\0</var>")
+    self.to_s.gsub("-", "&minus;").gsub(/[a-zA-Z]/, '<var>\0</var>').gsub(/(\d+)\/(\d+)/,
+      '<span class="fraction"><span class="numerator">\1</span><span class="divider">/</span><span class="denominator">\2</span></span>')
   end
   
   def to_hash
