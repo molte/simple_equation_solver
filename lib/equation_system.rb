@@ -8,8 +8,7 @@ require File.join(File.dirname(__FILE__), 'variable')
 # The EquationSystem class is able to solve a system of m unordered first-degree linear equations with n unknown variables.
 # Requirements:
 #  - The equations may only contain variables with coefficients (eg. 4z) and numbers.
-#  - All numbers should be rational, written with decimal-notation.
-#  - The only allowed operators are plus and minus (except the hidden multiplication sign between the coefficient and the variable).
+#  - All numbers should be rational.
 # Requires Ruby version 1.8.7.
 class EquationSystem
   VariablePattern = /([\d\/]+)?([a-zA-Z])/
