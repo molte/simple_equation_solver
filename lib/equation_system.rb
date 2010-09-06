@@ -1,4 +1,5 @@
 require 'matrix'
+require 'rational'
 require 'rubygems'
 require 'active_support/core_ext'
 require File.join(File.dirname(__FILE__), 'core_extensions')
@@ -11,8 +12,8 @@ require File.join(File.dirname(__FILE__), 'variable')
 #  - The only allowed operators are plus and minus (except the hidden multiplication sign between the coefficient and the variable).
 # Requires Ruby version 1.8.7.
 class EquationSystem
-  VariablePattern = /([\d\.]+)?([a-zA-Z])/
-  ConstantPattern = /([\d\.]+)/
+  VariablePattern = /([\d\/]+)?([a-zA-Z])/
+  ConstantPattern = /([\d\/]+)/
   
   def initialize(*equations)
     raise "EquationSystem only works with ruby version 1.8.7." unless RUBY_VERSION == "1.8.7"
@@ -62,7 +63,7 @@ class EquationSystem
       end
       
       elimination_matrix = Matrix.identity(m)
-      elimination_matrix[j, j] = 1.0 / @equations[j, j]
+      elimination_matrix[j, j] = 1 / @equations[j, j]
       
       m.times do |q|
         elimination_matrix[q, j] = -(@equations[q, j] / @equations[j, j]) if q != j
@@ -101,23 +102,23 @@ class EquationSystem
   
   # Parses an equation into a variable hash.
   def parse_equation(str)
-    left, right = *str.gsub(/[^0-9a-zA-Z()=+-]/, '').split('=')
+    left, right = *str.gsub(/[^0-9a-zA-Z()=+-\/]/, '').split('=')
     parse_expression(right, parse_expression(left), true)
   end
   
   # Parses an expression into a variable hash.
   def parse_expression(str, variables = {}, negate = false)
     nesting_level = [negate ? -1 : 1]
-    variables[1] ||= 0
+    variables[1] ||= Rational(0)
     
     str.scan(/(\A|[+-])(\(?)(?:#{VariablePattern}|#{ConstantPattern})(\)*)(?=[+-]|\z)/) do |sign, open_paren, coefficient, variable, constant, close_paren|
       negation = nesting_level[-1] * parse_sign(sign)
       
       if variable
-        variables[variable] ||= 0
-        variables[variable] += (coefficient || '1').to_f * negation
+        variables[variable] ||= Rational(0)
+        variables[variable] += (coefficient ? parse_frac(coefficient) : 1) * negation
       else
-        variables[1] -= constant.to_f * negation
+        variables[1] -= parse_frac(constant) * negation
       end
       
       nesting_level << negation unless open_paren.empty?
@@ -132,15 +133,20 @@ class EquationSystem
     (sign == '-' ? -1 : 1)
   end
   
+  # Parses a string fraction into a Rational object.
+  def parse_frac(fraction)
+    Rational(*fraction.split('/').map(&:to_i))
+  end
+  
   # Parses variable hashes into martices.
   def from_hash(*equations)
     variable_names = equations.map { |eq| eq.keys }.flatten.uniq
     variable_names.delete(1)
     
     equations.map! do |eq|
-      variable_names.each { |var| eq[var] ||= 0.0 }
-      value = eq.delete(1).to_f
-      eq.values.map { |n| n.to_f } << value
+      variable_names.each { |var| eq[var] ||= Rational(0) }
+      value = eq.delete(1).to_r
+      eq.values.map { |n| n.to_r } << value
     end
     
     return Matrix[*equations], variable_names.map { |name| Variable.new(name) }
@@ -148,7 +154,7 @@ class EquationSystem
   
   # Parses variable arrays into matrices.
   def from_array(*equations)
-    return Matrix[*equations].map { |n| n.to_f },
+    return Matrix[*equations].map { |n| n.to_r },
       ('a'..'z').to_a.first(equations[0].length - 1).map { |name| Variable.new(name) }
   end
 end

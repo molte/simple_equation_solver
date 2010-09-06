@@ -10,7 +10,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "4 + a = 2a"
     
     solution 'a' => 4, 'b' => -3
-    solution "a = 4.0, b = -3.0"
+    solution "a = 4, b = -3"
   end
   
   equation_system :advanced do
@@ -19,7 +19,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "5x - 5 + 4y - 7z = 20"
     
     solution 'x' => 6, 'y' => 4, 'z' => 3
-    solution "x = 6.0, y = 4.0, z = 3.0"
+    solution "x = 6, y = 4, z = 3"
   end
   
   equation_system :hash do
@@ -28,7 +28,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation 'x' => 5, 'y' => 4, 'z' => -7, 1 => 25
     
     solution 'x' => 6, 'y' => 4, 'z' => 3
-    solution "x = 6.0, y = 4.0, z = 3.0"
+    solution "x = 6, y = 4, z = 3"
   end
   
   equation_system :array do
@@ -37,7 +37,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation [0, 4, 1, 2]
     
     solution 'a' => 2, 'b' => 1, 'c' => -2
-    solution "a = 2.0, b = 1.0, c = -2.0"
+    solution "a = 2, b = 1, c = -2"
   end
   
   equation_system :other_names do
@@ -46,7 +46,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "u + 3v + 9w = 23"
     
     solution 'u' => 5, 'v' => 3, 'w' => 1
-    solution "u = 5.0, v = 3.0, w = 1.0"
+    solution "u = 5, v = 3, w = 1"
   end
   
   equation_system :with_parens do
@@ -54,7 +54,7 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "(x + 2 - (5 + y)) = 5 - (2x - x)"
     
     solution 'x' => 6, 'y' => 4
-    solution "x = 6.0, y = 4.0"
+    solution "x = 6, y = 4"
   end
   
   equation_system :with_unordered_rows do
@@ -63,15 +63,15 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "2y - 2z = 6"
     
     solution 'x' => 2, 'y' => 1, 'z' => -2
-    solution "x = 2.0, y = 1.0, z = -2.0"
+    solution "x = 2, y = 1, z = -2"
   end
   
   equation_system :with_multiple_solutions do
     equation "x - y + z = 1"
     equation "x + y - z = 2"
     
-    solution 'x' => 1.5, 'y' => {1 => 0.5, 'z' => 1}, 'z' => {}
-    solution "x = 1.5, y = 0.5 + z"
+    solution 'x' => Rational(3, 2), 'y' => {1 => Rational(1, 2), 'z' => 1}, 'z' => {}
+    solution "x = 3/2, y = 1/2 + z"
   end
   
   equation_system :homogeneous do
@@ -80,7 +80,15 @@ class EquationSolverTest < Test::Unit::TestCase
     equation "a + b - 3c + d = 0"
     equation "a + b + c - 3d = 0"
     
-    solution 'a' => {1 => 0.0, 'd' => 1.0}, 'b' => {1 => 0.0, 'd' => 1.0}, 'c' => {1 => 0.0, 'd' => 1.0}, 'd' => {}
+    solution 'a' => {1 => 0, 'd' => 1}, 'b' => {1 => 0, 'd' => 1}, 'c' => {1 => 0, 'd' => 1}, 'd' => {}
     solution "a = d, b = d, c = d"
+  end
+  
+  equation_system :with_fractional_input do
+    equation "b = 1/2a + 3/4"
+    equation "a = 7/5"
+    
+    solution 'a' => Rational(7, 5), 'b' => Rational(29, 20)
+    solution "a = 7/5, b = 29/20"
   end
 end
