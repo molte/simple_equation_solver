@@ -3,7 +3,7 @@ class Variable
   
   def initialize(name, value = {})
     @name = name.to_s
-    @value = (value.is_a?(Numeric) ? {1 => value.to_f} : value)
+    @value = (value.is_a?(Numeric) ? {1 => value} : value)
   end
   
   # Returns a new variable as the sum of the current and given values.
@@ -38,6 +38,6 @@ class Variable
   # Returns an array of the constant followed by arrays of coefficient-symbol pairs.
   def sorted_value
     symbol_format = lambda { |symbol, number| number == 1 ? symbol : (number == -1 ? "-#{symbol}" : [number, symbol]) }
-    @value.except(1).sort.map(&symbol_format).unshift(@value[1]).reject { |number, symbol| number.is_a?(Numeric) && number.zero? }.presence || [0.0]
+    @value.except(1).sort.map(&symbol_format).unshift(@value[1]).reject { |number, symbol| number.is_a?(Numeric) && number.zero? }.presence || [0]
   end
 end
