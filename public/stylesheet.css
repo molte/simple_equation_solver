@@ -58,6 +58,7 @@ var {
 
 .solution .fraction .numerator, .solution .fraction .denominator {
   display: block;
+  text-align: center;
 }
 
 .solution .fraction .divider {
