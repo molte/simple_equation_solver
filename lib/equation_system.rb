@@ -145,10 +145,10 @@ class EquationSystem
     equations.map! do |eq|
       variable_names.each { |var| eq[var] ||= Rational(0) }
       value = eq.delete(1).to_r
-      eq.values.map { |n| n.to_r } << value
+      eq.sort.map { |symbol, number| number.to_r } << value
     end
     
-    return Matrix[*equations], variable_names.map { |name| Variable.new(name) }
+    return Matrix[*equations], variable_names.sort.map { |name| Variable.new(name) }
   end
   
   # Parses variable arrays into matrices.
