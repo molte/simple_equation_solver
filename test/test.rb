@@ -91,4 +91,12 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'a' => Rational(7, 5), 'b' => Rational(29, 20)
     solution "a = 7/5, b = 29/20"
   end
+  
+  equation_system :with_long_variable_names do
+    equation "var1 + var2 = 45var2"
+    equation "5 - (7var2 + 3) = 23"
+    
+    solution 'var1' => -132, 'var2' => -3
+    solution "var1 = -132, var2 = -3"
+  end
 end

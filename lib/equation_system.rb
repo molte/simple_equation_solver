@@ -11,7 +11,7 @@ require File.join(File.dirname(__FILE__), 'variable')
 #  - All numbers should be rational.
 # Requires Ruby version 1.8.7.
 class EquationSystem
-  VariablePattern = /([\d\/]+)?([a-zA-Z])/
+  VariablePattern = /([\d\/]+)?([a-zA-Z][a-zA-Z0-9]*)/
   ConstantPattern = /([\d\/]+)/
   
   def initialize(*equations)
