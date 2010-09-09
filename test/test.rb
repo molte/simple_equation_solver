@@ -99,4 +99,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'var1' => -132, 'var2' => -3
     solution "var1 = -132, var2 = -3"
   end
+  
+  equation_system :with_decimal_values do
+    equation "1/2s + 4.5t = 1.5/3.0"
+    
+    solution 's' => {1 => 1, 't' => -9}, 't' => {}
+    solution "s = 1 - 9t"
+  end
 end

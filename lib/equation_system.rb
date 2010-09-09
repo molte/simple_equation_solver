@@ -11,8 +11,8 @@ require File.join(File.dirname(__FILE__), 'variable')
 #  - All numbers should be rational.
 # Requires Ruby version 1.8.7.
 class EquationSystem
-  VariablePattern = /([\d\/]+)?([a-zA-Z][a-zA-Z0-9]*)/
-  ConstantPattern = /([\d\/]+)/
+  VariablePattern = /([\d\/,\.]+)?([a-zA-Z][a-zA-Z0-9]*)/
+  ConstantPattern = /([\d\/,\.]+)/
   
   def initialize(*equations)
     raise "EquationSystem only works with ruby version 1.8.7." unless RUBY_VERSION == "1.8.7"
@@ -101,7 +101,7 @@ class EquationSystem
   
   # Parses an equation into a variable hash.
   def parse_equation(str)
-    left, right = *str.gsub(/[^0-9a-zA-Z()=+-\/]/, '').split('=')
+    left, right = *str.gsub(/[^0-9a-zA-Z()=+-\/,\.]/, '').split('=')
     parse_expression(right, parse_expression(left), true)
   end
   
@@ -134,7 +134,13 @@ class EquationSystem
   
   # Parses a string fraction into a Rational object.
   def parse_frac(fraction)
-    Rational(*fraction.split('/').map(&:to_i))
+    fraction.split('/').map { |n| parse_decimal(n) }.inject(&:/)
+  end
+  
+  # Parses a string decimal value into a Rational object.
+  def parse_decimal(value)
+    value = value.to_s.split(/[,\.]/)
+    Rational(value.join.to_i, (value.length > 1 ? 10 ** value[-1].length : 1))
   end
   
   # Parses variable hashes into martices.
