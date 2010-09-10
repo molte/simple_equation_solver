@@ -3,9 +3,16 @@ GEM
   specs:
     activesupport (3.0.0)
     i18n (0.4.1)
+    nokogiri (1.4.3.1-x86-mingw32)
     rack (1.2.1)
+    rack-test (0.5.4)
+      rack (>= 1.0)
     sinatra (1.0)
       rack (>= 1.0)
+    webrat (0.7.1)
+      nokogiri (>= 1.2.0)
+      rack (>= 1.0)
+      rack-test (>= 0.5.3)
 
 PLATFORMS
   x86-mingw32
@@ -14,3 +21,4 @@ DEPENDENCIES
   activesupport (~> 3.0.0)
   i18n
   sinatra
+  webrat
