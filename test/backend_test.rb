@@ -106,4 +106,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 's' => {1 => 1, 't' => -9}, 't' => {}
     solution "s = 1 - 9t"
   end
+  
+  equation_system :with_multiplication_signs do
+    equation "2 * x = 4"
+    
+    solution 'x' => 2
+    solution "x = 2"
+  end
 end

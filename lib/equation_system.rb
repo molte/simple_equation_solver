@@ -11,7 +11,7 @@ require File.join(File.dirname(__FILE__), 'variable')
 #  - All numbers should be rational.
 # Requires Ruby version 1.8.7.
 class EquationSystem
-  VariablePattern = /([\d\/,\.]+)?([a-zA-Z][a-zA-Z0-9]*)/
+  VariablePattern = /([\d\/,\.]+)?\*?([a-zA-Z][a-zA-Z0-9]*)/
   ConstantPattern = /([\d\/,\.]+)/
   
   def initialize(*equations)
@@ -101,7 +101,7 @@ class EquationSystem
   
   # Parses an equation into a variable hash.
   def parse_equation(str)
-    left, right = *str.gsub(/[^0-9a-zA-Z()=+-\/,\.]/, '').split('=')
+    left, right = *str.gsub(/[^0-9a-zA-Z()=+-\/,\.*]/, '').split('=')
     parse_expression(right, parse_expression(left), true)
   end
   
