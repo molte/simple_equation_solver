@@ -27,9 +27,9 @@ class EquationSystem
   end
   
   # Solves the equations and returns the solution as a hash.
-  def solution
+  def solution(notation = :rational)
     solve! unless @solved
-    @variables
+    notation == :decimal ? @variables.map { |var| var.with_float_value } : @variables
   end
   
   private

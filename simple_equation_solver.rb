@@ -19,13 +19,13 @@ get '/' do
 end
 
 post '/' do
-  @solution = solve_equation_system(params[:equations])
+  @solution = solve_equation_system(params[:equations], params[:notation].presence || :rational)
   erb :form
 end
 
 helpers do
-  def solve_equation_system(input)
-    solution = EquationSystem.new(*input.split("\n").reject(&:blank?)).solution.map(&:to_html).reject(&:blank?).sort.join(', ')
+  def solve_equation_system(input, notation)
+    solution = EquationSystem.new(*input.split("\n").reject(&:blank?)).solution(notation.to_sym).map(&:to_html).reject(&:blank?).sort.join(', ')
     %{<p class="solution">Solution: #{solution}</p>}
   rescue
     '<p class="error">The equations could not be solved.</p>'

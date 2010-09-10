@@ -18,7 +18,11 @@
     
     <form action="/" method="post">
       <p><textarea name="equations" cols="100" rows="10"><%= params[:equations] %></textarea></p>
-      <p><input type="submit" value="Solve!"></p>
+      <p>
+        <input type="submit" value="Solve!">
+        <input type="checkbox" name="notation" id="notation" value="decimal"<%= ' checked' if params[:notation] == 'decimal' %>>
+        <label for="notation">Use decimal notation in output</label>
+      </p>
     </form>
     <%= @solution %>
     

@@ -6,6 +6,12 @@ class Variable
     @value = (value.is_a?(Numeric) ? {1 => value} : value)
   end
   
+  # Returns a new Variable object with the value represented as objects of Float,
+  # rounded to the given precision.
+  def with_float_value(precision = 2)
+    Variable.new(@name, @value.map_values { |n| n.to_f.round(precision) })
+  end
+  
   # Returns a new variable as the sum of the current and given values.
   def +(addend)
     case addend
