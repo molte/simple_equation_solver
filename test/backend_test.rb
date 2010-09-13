@@ -107,6 +107,13 @@ class EquationSolverTest < Test::Unit::TestCase
     solution "s = 1 - 9t"
   end
   
+  equation_system :with_comma_notation do
+    equation "1.5x = 3,5"
+    
+    solution'x' => Rational(7, 3)
+    solution "x = 7/3"
+  end
+  
   equation_system :with_multiplication_signs do
     equation "2 * x = 4"
     
