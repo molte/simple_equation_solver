@@ -113,4 +113,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => 2
     solution "x = 2"
   end
+  
+  equation_system :with_advanced_multiplication do
+    equation "2 * 4 = 0 + 3(7*x - 2)"
+    
+    solution 'x' => Rational(2, 3)
+    solution "x = 2/3"
+  end
 end

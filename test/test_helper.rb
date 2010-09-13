@@ -18,7 +18,7 @@ module TestHelper
     def solution(variables)
       case variables
       when Hash
-        @expected_solution_hash = variables.map { |k, v| Variable.new(k, v).to_hash }.inject(:merge)
+        @expected_solution_hash = variables.map { |k, v| EquationSystem::Variable.new(k, v).to_hash }.inject(:merge)
       when String
         @expected_solution_string = variables
       end
