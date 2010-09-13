@@ -28,7 +28,7 @@ class ApplicationTest < Test::Unit::TestCase
   end
   
   def test_shown_example
-    equations = ["4x - 5y + (3z - y) = 9", "3x - 3y + 8z = 22 + 2y", "5x - (5 - 4y + 7z) = 20"]
+    equations = ["4x - 5y + (3z - y) = 4 * 4.5/2", "2 * 1.5x - 3y + 8z = 22 + 2y", "5x - 2(5/2 - 2y + 3.5z) = 20"]
     
     equations.each { |eq| assert_contain eq }
     
