@@ -1,7 +1,7 @@
 require 'rack/test'
 require 'webrat'
 require 'test/unit'
-require File.join(File.dirname(__FILE__), '..', 'simple_equation_solver')
+require File.dirname(__FILE__) + '/../simple_equation_solver'
 
 ENV['RACK_ENV'] = 'test'
 

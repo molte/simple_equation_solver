@@ -1,10 +1,12 @@
 require 'matrix'
 require 'rational'
+
 require 'rubygems'
 require 'active_support/core_ext'
-require File.join(File.dirname(__FILE__), 'core_extensions')
-require File.join(File.dirname(__FILE__), 'equation_system', 'variable')
-require File.join(File.dirname(__FILE__), 'equation_system', 'expression_parser')
+
+require File.dirname(__FILE__) + '/core_extensions'
+require File.dirname(__FILE__) + '/equation_system/variable'
+require File.dirname(__FILE__) + '/equation_system/expression_parser'
 
 # The EquationSystem class is able to solve a system of m unordered first-degree linear equations with n unknown variables.
 # Requirements:
