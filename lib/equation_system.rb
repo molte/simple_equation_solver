@@ -9,10 +9,7 @@ require File.dirname(__FILE__) + '/equation_system/variable'
 require File.dirname(__FILE__) + '/equation_system/expression_parser'
 
 # The EquationSystem class is able to solve a system of m unordered first-degree linear equations with n unknown variables.
-# Requirements:
-#  - The equations may only contain variables with coefficients (eg. 4z) and numbers.
-#  - All numbers should be rational.
-# Requires Ruby version 1.8.7.
+# (requires Ruby 1.8.7)
 class EquationSystem
   def initialize(*equations)
     raise "EquationSystem only works with ruby version 1.8.7." unless RUBY_VERSION == "1.8.7"
