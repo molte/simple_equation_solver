@@ -72,7 +72,7 @@ class EquationSystem
     # Parses an expression into a variable hash.
     def parse_expression(expression, negate = false)
       @scanner = StringScanner.new(expression.gsub(/\s/, ''))
-      @factors = [negate ? -1 : 1]
+      @cache = [ExpressionValue.new(negate ? -1 : 1)]
       add_nesting_level
       
       until @scanner.eos?
@@ -85,24 +85,20 @@ class EquationSystem
       @variables
     end
     
-    # When a plus or minus sign is present, resets the expression factor to the
-    # factor at the previous nesting level, negated if the sign is a minus
-    # sign.
+    # Scans for a plus or minus sign in the expression. On success, resets the
+    # expression cache and negate if minus.
     def parse_term
       sign = @scanner.scan(/[+-]/) and reset_factor(parse_sign(sign))
     end
     
-    # When a constant number is present, multiplies the expression factor with
-    # that number and save it if it is not a factor of a product or it is the
-    # last of such.
+    # Scans for a constant number in the expression and caches it.
     def parse_constant
       constant = @scanner.scan(/[\d\/,\.]+/) and update_factor(constant)
     end
     
-    # When a variable symbol is present, store it together with its
-    # coefficients and resets the expression factor.
+    # Scans for a variable symbol in the expression and caches it.
     def parse_variable
-      variable = @scanner.scan(/[a-zA-Z][a-zA-Z0-9]*/) and store_value(variable)
+      variable = @scanner.scan(/[a-zA-Z][a-zA-Z0-9]*/) and update_variable(variable)
     end
     
     # When an open parenthesis is present next in the expression, goes a
@@ -112,47 +108,64 @@ class EquationSystem
     end
     
     # When a closing parenthesis is present next in the expression, goes back a
-    # level in the nesting stack and resets the expression factor.
+    # level in the nesting stack and resets the expression cache.
     def parse_close_paren
       @scanner.scan(/\)/) and remove_nesting_level
     end
     
-    # Multiplies the expression factor with the given number and saves the
-    # value if the number is the last in the current term.
-    def update_factor(number, negate = false)
-      @factors[-1] *= parse_frac(number)
-      if @scanner.check(/\)|[+-]|\z/)
-        @factors[-1] *= -1
-        store_value(1)
-      end
+    # Multiplies the current expression cache with the given number and saves
+    # the value if necessary.
+    def update_factor(number)
+      @cache[-1] *= parse_frac(number)
+      store_value
       return true
     end
     
-    # Resets the current expression factor to the factor at the previous
-    # nesting level, multiplied by a given number.
-    def reset_factor(multiplier = 1)
-      @factors[-1] = @factors[-2] * multiplier
+    # Sets the variable in the current expression cache and saves the value if
+    # necessary.
+    def update_variable(symbol)
+      @cache[-1].variable = symbol
+      store_value
+      return true
     end
     
-    # Adds another level to the nesting stack, where the new expression factor
-    # is identical to the previous.
+    # Resets the current expression cache to the parent cache, multiplied by a
+    # given number.
+    def reset_factor(factor = 1)
+      @cache[-1] = @cache[-2] * factor
+    end
+    
+    # Adds another level to the nesting stack.
     def add_nesting_level
-      @factors << @factors[-1]
+      @cache << @cache[-1].clone
     end
     
     # Removes the top-most level of the nesting stack and resets the expression
-    # factor.
+    # cache.
     def remove_nesting_level
-      @factors.pop
+      @cache.pop
       reset_factor
     end
     
-    # Stores the variable value in the proper hash and resets the expression
-    # factor.
-    def store_value(variable)
+    # Stores the value currently present in the expression cache if all the
+    # factors of the current term has been scanned.
+    def store_value
+      store_value!(@cache[-1].variable, @cache[-1].constant) if end_of_term?
+    end
+    
+    # Stores the given value as the value of the given variable. If there is no
+    # variable, the value will be subtracted from the current value of the
+    # variable instead of added.
+    def store_value!(variable, value)
       @variables[variable] ||= Rational(0)
-      @variables[variable] += @factors[-1]
+      @variables[variable] += value * (variable == 1 ? -1 : 1)
       reset_factor
+    end
+    
+    # Returns whether the scanner is currently at the end of a term or before a
+    # closing parenthesis.
+    def end_of_term?
+      @scanner.check(/\)|[+-]|\z/)
     end
     
   end
