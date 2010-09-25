@@ -22,7 +22,7 @@ ul, ol {
 
 textarea, pre, .solution, .error {
   padding: 10px;
-  font: 13px/1.2 "Bitstream Vera Sans Mono", Monaco, Consolas, monospace;
+  font: 13px/1.2 "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Apple Menlo", Monaco, Consolas, monospace;
 }
 
 input {
@@ -54,7 +54,7 @@ h2 {
 }
 
 code {
-  font-family: "Bitstream Vera Sans Mono", Monaco, Consolas, monospace;
+  font-family: "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Apple Menlo", Monaco, Consolas, monospace;
 }
 
 var {
