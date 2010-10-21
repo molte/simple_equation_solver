@@ -39,30 +39,6 @@ class EquationSystem
     @solved = true
   end
   
-  # Uses the Gauss-Jordan algorithm to reduce the equations to reduced row-echelon form.
-  def eliminate!
-    [m, n].min.times do |j|
-      eliminate_row!(j)
-    end
-  end
-  
-  # Eliminates for the given column number.
-  def eliminate_row!(j)
-    (j...m).each do |p|
-      @equations.permutate!(j, p) && break unless @equations[p, j].zero?
-      return if (p + 1) == m
-    end
-    
-    elimination_matrix = Matrix.identity(m)
-    elimination_matrix[j, j] = 1 / @equations[j, j]
-    
-    m.times do |q|
-      elimination_matrix[q, j] = -(@equations[q, j] / @equations[j, j]) if q != j
-    end
-    
-    @equations = elimination_matrix * @equations
-  end
-  
   # Finds the least squares solution by pre-multiplying the augmented matrix with the transpose of the coefficient matrix.
   def normal_equations
     @approx = true
@@ -79,7 +55,8 @@ class EquationSystem
   
   # Uses back substitution to compute the variable values.
   def back_substitute!(equations)
-    equations.to_a.reject { |row| row.all?(&:zero?) }.each_with_index do |row, i|
+    equations.to_a.each_with_index do |row, i|
+      next if row[i].zero?
       @variables[i] += row[-1]
       ((i + 1)...n).each do |j|
         @variables[i] += {@variables[j].name => -row[j]} unless row[j].zero?

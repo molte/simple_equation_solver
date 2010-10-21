@@ -127,4 +127,13 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => Rational(2, 3)
     solution "x = 2/3"
   end
+  
+  equation_system :inconsistent do
+    equation "2x + 2y - 2z = 5"
+    equation "7x + 7y + z = 10"
+    equation "5x + 5y - z =  5"
+    
+    solution 'x' => {1 => Rational(155, 116), 'y' => -1}, 'y' => {}, 'z' => Rational(-45, 116)
+    solution "x = 155/116 - y, z = -45/116"
+  end
 end

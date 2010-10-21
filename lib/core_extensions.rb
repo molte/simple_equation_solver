@@ -11,21 +11,32 @@ class Matrix
   
   # Uses the Gauss-Jordan algorithm to reduce the matrix to reduced row-echelon form.
   def reduced_row_echelon_form
-    (0...[row_size, column_size].min).inject(self.clone) do |matrix, j|
-      (j...row_size).each do |p|
-        matrix.permutate!(j, p) && break unless matrix[p, j].zero?
-        return matrix if (p + 1) == row_size
-      end
-      
-      eliminator = Matrix.identity(row_size)
-      eliminator[j, j] = 1 / matrix[j, j]
-      
-      row_size.times do |q|
-        eliminator[q, j] = -(matrix[q, j] / matrix[j, j]) if q != j
-      end
-      
-      eliminator * matrix
+    (0...min_dimension).inject(clone) do |matrix, j|
+      eliminate_row(matrix, j)
     end
+  end
+  
+  private
+  # Eliminates the row at the given index of the given matrix.
+  def eliminate_row(matrix, j)
+    (j...row_size).each do |p|
+      matrix.permutate!(j, p) && break unless matrix[p, j].zero?
+      return matrix if (p + 1) == row_size
+    end
+    
+    eliminator = Matrix.identity(row_size)
+    eliminator[j, j] = 1 / matrix[j, j]
+    
+    row_size.times do |q|
+      eliminator[q, j] = -(matrix[q, j] / matrix[j, j]) if q != j
+    end
+    
+    eliminator * matrix
+  end
+  
+  # Returns the smalles dimension of the matrix.
+  def min_dimension
+    [row_size, column_size].min
   end
 end
 

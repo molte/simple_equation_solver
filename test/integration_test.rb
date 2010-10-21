@@ -51,14 +51,23 @@ class ApplicationTest < Test::Unit::TestCase
   end
   
   def test_inconsistent_system
-    fill_in "equations", :with => "2x + 2y - 2z = 5\n7x + 7y + z = 10\n5x + 5y - z =  5"
+    fill_in "equations", :with => "0 = c\n0 = a + b + c\n-1 = 4a + 2b + c\n4 = 9a + 3b + c\n8 = 16a + 4b + c"
     click_button "Solve!"
-    assert_contain "The equations could not be solved."
+    assert response_text.include?("Approximate solution: a = 1, b = &minus;2, c = 1/5")
   end
   
   def test_ignorance_of_spacing
     fill_in "equations", :with => "\na=1+b\n\n4 + a     = 2a\n   \n"
     click_button "Solve!"
     assert_contain "Solution: a = 4, b = 3"
+  end
+  
+  private
+  def strip_html_tags(html)
+    html.gsub(/<[^>]+>/, '')
+  end
+  
+  def response_text
+    strip_html_tags(response_body)
   end
 end
