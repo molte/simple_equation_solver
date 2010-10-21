@@ -20,7 +20,7 @@ ul, ol {
   padding-left: 20px;
 }
 
-textarea, pre, .solution, .error {
+textarea, pre, .solution, .approx-solution, .error {
   padding: 10px;
   font: 13px/1.2 "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Apple Menlo", Monaco, Consolas, monospace;
 }
@@ -62,27 +62,32 @@ var {
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-.solution .fraction {
+.fraction {
   display: inline-block;
   margin-right: 2px;
   vertical-align: middle;
 }
 
-.solution .fraction .numerator, .solution .fraction .denominator {
+.fraction .numerator, .fraction .denominator {
   display: block;
   text-align: center;
 }
 
-.solution .fraction .divider {
+.fraction .divider {
   display: none;
 }
 
-.solution .fraction .denominator {
+.fraction .denominator {
   border-top: 1px solid #fff;
 }
 
 .solution {
   background-color: #090;
+  color: #fff;
+}
+
+.approx-solution {
+  background-color: #f80;
   color: #fff;
 }
 
