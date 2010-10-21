@@ -22,6 +22,9 @@ class EquationSystem
     notation == :decimal ? @variables.map { |var| var.with_float_value } : @variables
   end
   
+  # Returns whether the solution is exact or just an approximation.
+  def approximation?; @approximation end
+  
   private
   # Returns the number of equations in the system.
   def m; @equations.row_size end
@@ -32,7 +35,7 @@ class EquationSystem
   # Solves the equations with elimination and back substitution.
   def solve!
     eliminate!
-    raise "The equations could not be solved." unless consistent?
+    find_least_squares! unless consistent?
     back_substitute!
     @solved = true
   end
@@ -47,18 +50,24 @@ class EquationSystem
   # Eliminates for the given column number.
   def eliminate_row!(j)
     (j...m).each do |p|
-        @equations.permutate!(j, p) && break unless @equations[p, j].zero?
-        return if (p + 1) == m
-      end
-      
-      elimination_matrix = Matrix.identity(m)
-      elimination_matrix[j, j] = 1 / @equations[j, j]
-      
-      m.times do |q|
-        elimination_matrix[q, j] = -(@equations[q, j] / @equations[j, j]) if q != j
-      end
-      
-      @equations = elimination_matrix * @equations
+      @equations.permutate!(j, p) && break unless @equations[p, j].zero?
+      return if (p + 1) == m
+    end
+    
+    elimination_matrix = Matrix.identity(m)
+    elimination_matrix[j, j] = 1 / @equations[j, j]
+    
+    m.times do |q|
+      elimination_matrix[q, j] = -(@equations[q, j] / @equations[j, j]) if q != j
+    end
+    
+    @equations = elimination_matrix * @equations
+  end
+  
+  # Finds the least squares solution by pre-multiplying the augmented matrix with the transpose of the coefficient matrix.
+  def find_least_squares!
+    @approximation = true
+    @equations = Matrix[*@equations.to_a.transpose.to(-2)] * @equations
   end
   
   # Checks whether the system of equations is solvable.
