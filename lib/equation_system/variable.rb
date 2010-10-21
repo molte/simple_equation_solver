@@ -1,3 +1,8 @@
+require 'rubygems'
+require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/float/rounding'
+require 'active_support/core_ext/hash/except'
+
 class EquationSystem
   class Variable
     attr_reader :name, :value

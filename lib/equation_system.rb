@@ -1,9 +1,6 @@
 require 'matrix'
 require 'rational'
 
-require 'rubygems'
-require 'active_support/core_ext'
-
 require File.dirname(__FILE__) + '/core_extensions'
 require File.dirname(__FILE__) + '/equation_system/variable'
 require File.dirname(__FILE__) + '/equation_system/expression_parser'
@@ -42,14 +39,14 @@ class EquationSystem
   # Finds the least squares solution by pre-multiplying the augmented matrix with the transpose of the coefficient matrix.
   def normal_equations
     @approx = true
-    (Matrix[*@equations.to_a.transpose.to(-2)] * @equations).reduced_row_echelon_form
+    (Matrix[*@equations.to_a.transpose[0..-2]] * @equations).reduced_row_echelon_form
   end
   
   # Checks whether the system of equations is solvable.
   # This method should only be called after elimination.
   def consistent?(equations)
     equations.to_a.none? do |row|
-      row.to(-2).all?(&:zero?) && !row[-1].zero?
+      row[0..-2].all?(&:zero?) && !row[-1].zero?
     end
   end
   

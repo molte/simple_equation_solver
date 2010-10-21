@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/lib/equation_system'
 
 require 'rubygems'
 require 'sinatra'
+require 'active_support/core_ext/object/blank'
 
 set(:app_file, __FILE__)
 
