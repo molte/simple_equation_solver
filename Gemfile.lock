@@ -18,7 +18,7 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
-  activesupport (= 3.0.1)
+  activesupport (~> 3.0.1)
   i18n
-  sinatra (= 1.0)
-  webrat
+  sinatra (~> 1.0.0)
+  webrat (~> 0.7.1)
