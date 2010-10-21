@@ -23,7 +23,7 @@ class EquationSystem
   end
   
   # Returns whether the solution is exact or just an approximation.
-  def approximation?; @approximation end
+  def approximation?; @approx end
   
   private
   # Returns the number of equations in the system.
@@ -34,9 +34,8 @@ class EquationSystem
   
   # Solves the equations with elimination and back substitution.
   def solve!
-    eliminate!
-    find_least_squares! unless consistent?
-    back_substitute!
+    equations = @equations.reduced_row_echelon_form
+    back_substitute!(consistent?(equations) ? equations : normal_equations)
     @solved = true
   end
   
@@ -65,31 +64,26 @@ class EquationSystem
   end
   
   # Finds the least squares solution by pre-multiplying the augmented matrix with the transpose of the coefficient matrix.
-  def find_least_squares!
-    @approximation = true
-    @equations = Matrix[*@equations.to_a.transpose.to(-2)] * @equations
+  def normal_equations
+    @approx = true
+    (Matrix[*@equations.to_a.transpose.to(-2)] * @equations).reduced_row_echelon_form
   end
   
   # Checks whether the system of equations is solvable.
   # This method should only be called after elimination.
-  def consistent?
-    @equations.to_a.none? do |row|
+  def consistent?(equations)
+    equations.to_a.none? do |row|
       row.to(-2).all?(&:zero?) && !row[-1].zero?
     end
   end
   
   # Uses back substitution to compute the variable values.
-  def back_substitute!
-    equations_without_zero_rows.each_with_index do |row, i|
+  def back_substitute!(equations)
+    equations.to_a.reject { |row| row.all?(&:zero?) }.each_with_index do |row, i|
       @variables[i] += row[-1]
       ((i + 1)...n).each do |j|
         @variables[i] += {@variables[j].name => -row[j]} unless row[j].zero?
       end
     end
-  end
-  
-  # Returns the equations as a nested array excluding the all-zero rows.
-  def equations_without_zero_rows
-    @equations.to_a.reject { |row| row.all?(&:zero?) }
   end
 end
