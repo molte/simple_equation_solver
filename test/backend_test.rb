@@ -40,7 +40,7 @@ class EquationSolverTest < Test::Unit::TestCase
     solution "a = 2, b = 1, c = -2"
   end
   
-  equation_system :other_names do
+  equation_system :with_other_names do
     equation "u + v + w = 9"
     equation "u + 2v + 4w = 15"
     equation "u + 3v + 9w = 23"
