@@ -1,6 +1,7 @@
 class EquationSystem
   class ExpressionParser
     TERM_END = /\)|[+-]|\z/
+    NUMBER   = /\d+(?:[,\.]\d+)?/
     
     attr_reader :variables
     
@@ -83,14 +84,10 @@ class EquationSystem
         s.at(/[+-]/) { |sign| reset_factor(parse_sign(sign)) }
         
         # Constant number -> Write to expression cache.
-        s.at(/[\d\/,\.]+/) do |constant|
+        s.at(/#{NUMBER}(?:\/#{NUMBER})?/) do |constant|
           constant = parse_frac(constant)
           
-          children = @cache[0..-2].reverse.take_while { |factor| factor.level > @cache[-1].level }.each_index do |index|
-            @cache[-2 - index] *= constant
-          end
-          
-          if children.empty?
+          if multiply_backwards(constant).empty?
             @cache[-1] *= constant
             @cache[-1].symbol ||= 1 if s.scanner.check(TERM_END)
           end
@@ -101,6 +98,10 @@ class EquationSystem
           @cache[-1].symbol = variable
         end
         
+        s.at(/\/#{NUMBER}/) do |denominator|
+          multiply_backwards(Rational(1) / parse_decimal(denominator[1..-1]))
+        end
+        
         # Open parenthesis -> Increase nesting level.
         s.at(/\(/) { add_nesting_level }
         
@@ -109,6 +110,14 @@ class EquationSystem
       end
       
       store_values!
+    end
+    
+    # Multiplies the children of the previous parenthesis with the given constant,
+    # and returns the elements on which the operation is performed.
+    def multiply_backwards(constant)
+      @cache[0..-2].reverse.take_while { |factor| factor.level > @cache[-1].level }.each_index do |index|
+        @cache[-2 - index] *= constant
+      end
     end
     
     # Returns the last factor that is in one nesting level less than the current.

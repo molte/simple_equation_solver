@@ -143,4 +143,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => Rational(-5, 2)
     solution "x = -5/2"
   end
+  
+  equation_system :with_large_numerator do
+    equation "4 - (2 + 6x)/2 = 0"
+    
+    solution 'x' => 1
+    solution "x = 1"
+  end
 end
