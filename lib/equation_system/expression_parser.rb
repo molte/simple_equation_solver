@@ -1,5 +1,7 @@
 class EquationSystem
   class ExpressionParser
+    TERM_END = /\)|[+-]|\z/
+    
     attr_reader :variables
     
     # Parses equations into matrices.
@@ -71,62 +73,35 @@ class EquationSystem
     
     # Parses an expression into a variable hash.
     def parse_expression(expression, negate = false)
-      @scanner = StringScanner.new(expression.gsub(/\s/, ''))
       @cache = [ExpressionValue.new(negate ? -1 : 1)]
       add_nesting_level
       
-      until @scanner.eos?
-        @scanner.skip(/\*/)
-        unless parse_term || parse_constant || parse_variable || parse_open_paren || parse_close_paren
-          raise "Invalid expression syntax; unregocnized character used (#{@scanner.peek(1).inspect})."
+      ScanInstructor.scan(expression.gsub(/\s/, '')) do |s|
+        s.skip(/\*/)
+        
+        # Plus/minus sign -> Reset expression cache, and negate if minus.
+        s.at(/[+-]/) { |sign| reset_factor(parse_sign(sign)) }
+        
+        # Constant number -> Write to expression cache.
+        s.at(/[\d\/,\.]+/) do |constant|
+          @cache[-1] *= parse_frac(constant)
+          store_value if s.scanner.check(TERM_END)
         end
+        
+        # Variable symbol -> Write to expression cache.
+        s.at(/[a-zA-Z][a-zA-Z0-9]*/) do |variable|
+          @cache[-1].variable = variable
+          store_value if s.scanner.check(TERM_END)
+        end
+        
+        # Open parenthesis -> Increase nesting level.
+        s.at(/\(/) { add_nesting_level }
+        
+        # Close prenthesis -> Decrease nesting level and reset cache.
+        s.at(/\)/) { remove_nesting_level }
       end
       
       @variables
-    end
-    
-    # Scans for a plus or minus sign in the expression. On success, resets the
-    # expression cache and negate if minus.
-    def parse_term
-      sign = @scanner.scan(/[+-]/) and reset_factor(parse_sign(sign))
-    end
-    
-    # Scans for a constant number in the expression and caches it.
-    def parse_constant
-      constant = @scanner.scan(/[\d\/,\.]+/) and update_factor(constant)
-    end
-    
-    # Scans for a variable symbol in the expression and caches it.
-    def parse_variable
-      variable = @scanner.scan(/[a-zA-Z][a-zA-Z0-9]*/) and update_variable(variable)
-    end
-    
-    # When an open parenthesis is present next in the expression, goes a
-    # nesting level deeper.
-    def parse_open_paren
-      @scanner.scan(/\(/) and add_nesting_level
-    end
-    
-    # When a closing parenthesis is present next in the expression, goes back a
-    # level in the nesting stack and resets the expression cache.
-    def parse_close_paren
-      @scanner.scan(/\)/) and remove_nesting_level
-    end
-    
-    # Multiplies the current expression cache with the given number and saves
-    # the value if necessary.
-    def update_factor(number)
-      @cache[-1] *= parse_frac(number)
-      store_value
-      return true
-    end
-    
-    # Sets the variable in the current expression cache and saves the value if
-    # necessary.
-    def update_variable(symbol)
-      @cache[-1].variable = symbol
-      store_value
-      return true
     end
     
     # Resets the current expression cache to the parent cache, multiplied by a
@@ -150,7 +125,7 @@ class EquationSystem
     # Stores the value currently present in the expression cache if all the
     # factors of the current term has been scanned.
     def store_value
-      store_value!(@cache[-1].variable, @cache[-1].constant) if end_of_term?
+      store_value!(@cache[-1].variable, @cache[-1].constant)
     end
     
     # Stores the given value as the value of the given variable. If there is no
@@ -160,12 +135,6 @@ class EquationSystem
       @variables[variable] ||= Rational(0)
       @variables[variable] += value * (variable == 1 ? -1 : 1)
       reset_factor
-    end
-    
-    # Returns whether the scanner is currently at the end of a term or before a
-    # closing parenthesis.
-    def end_of_term?
-      @scanner.check(/\)|[+-]|\z/)
     end
     
   end

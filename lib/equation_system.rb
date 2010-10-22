@@ -3,6 +3,7 @@ require 'rational'
 
 require File.dirname(__FILE__) + '/core_extensions'
 require File.dirname(__FILE__) + '/equation_system/variable'
+require File.dirname(__FILE__) + '/equation_system/scan_instructor'
 require File.dirname(__FILE__) + '/equation_system/expression_value'
 require File.dirname(__FILE__) + '/equation_system/expression_parser'
 
