@@ -1,3 +1,5 @@
+require 'strscan'
+
 class EquationSystem
   class ScanInstructor
     attr_reader :scanner

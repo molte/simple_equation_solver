@@ -73,7 +73,7 @@ class EquationSystem
     
     # Parses an expression into a variable hash.
     def parse_expression(expression, negate = false)
-      @cache = [ExpressionValue.new(negate ? -1 : 1)]
+      @cache = [ExpressionValue.new(0, negate ? -1 : 1)]
       add_nesting_level
       
       ScanInstructor.scan(expression.gsub(/\s/, '')) do |s|
@@ -84,14 +84,21 @@ class EquationSystem
         
         # Constant number -> Write to expression cache.
         s.at(/[\d\/,\.]+/) do |constant|
-          @cache[-1] *= parse_frac(constant)
-          store_value if s.scanner.check(TERM_END)
+          constant = parse_frac(constant)
+          
+          children = @cache[0..-2].reverse.take_while { |factor| factor.level > @cache[-1].level }.each_index do |index|
+            @cache[-2 - index] *= constant
+          end
+          
+          if children.empty?
+            @cache[-1] *= constant
+            @cache[-1].symbol ||= 1 if s.scanner.check(TERM_END)
+          end
         end
         
         # Variable symbol -> Write to expression cache.
         s.at(/[a-zA-Z][a-zA-Z0-9]*/) do |variable|
-          @cache[-1].variable = variable
-          store_value if s.scanner.check(TERM_END)
+          @cache[-1].symbol = variable
         end
         
         # Open parenthesis -> Increase nesting level.
@@ -101,40 +108,38 @@ class EquationSystem
         s.at(/\)/) { remove_nesting_level }
       end
       
-      @variables
+      store_values!
+    end
+    
+    # Returns the last factor that is in one nesting level less than the current.
+    def factor_at(level)
+      @cache.reverse.detect { |factor| factor.level == level }
     end
     
     # Resets the current expression cache to the parent cache, multiplied by a
     # given number.
     def reset_factor(factor = 1)
-      @cache[-1] = @cache[-2] * factor
+      @cache << factor_at(@cache[-1].level - 1).next_level * factor
     end
     
     # Adds another level to the nesting stack.
     def add_nesting_level
-      @cache << @cache[-1].clone
+      @cache << @cache[-1].next_level
     end
     
     # Removes the top-most level of the nesting stack and resets the expression
     # cache.
     def remove_nesting_level
-      @cache.pop
       reset_factor
+      @cache[-1] = @cache[-1].prev_level
     end
     
-    # Stores the value currently present in the expression cache if all the
-    # factors of the current term has been scanned.
-    def store_value
-      store_value!(@cache[-1].variable, @cache[-1].constant)
-    end
-    
-    # Stores the given value as the value of the given variable. If there is no
-    # variable, the value will be subtracted from the current value of the
-    # variable instead of added.
-    def store_value!(variable, value)
-      @variables[variable] ||= Rational(0)
-      @variables[variable] += value * (variable == 1 ? -1 : 1)
-      reset_factor
+    # Accumulates all the parsed values of the expression cache and saves them.
+    def store_values!
+      @cache.group_by(&:symbol).reject { |symbol, value| symbol.nil? }.each do |symbol, value|
+        @variables[symbol] ||= Rational(0)
+        @variables[symbol] += value.map(&:constant).inject(&:+) * (symbol == 1 ? -1 : 1)
+      end
     end
     
   end

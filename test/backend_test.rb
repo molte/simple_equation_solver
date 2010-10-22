@@ -136,4 +136,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => {1 => Rational(155, 116), 'y' => -1}, 'y' => {}, 'z' => Rational(-45, 116)
     solution "x = 155/116 - y, z = -45/116"
   end
+  
+  equation_system :with_coefficient_behind_paren do
+    equation "7 = (-x + 1) * 2"
+    
+    solution 'x' => Rational(-5, 2)
+    solution "x = -5/2"
+  end
 end
