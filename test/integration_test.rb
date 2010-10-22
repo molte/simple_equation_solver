@@ -72,6 +72,12 @@ class ApplicationTest < Test::Unit::TestCase
     assert_contain "The equations could not be solved."
   end
   
+  def test_unsupported_operators
+    fill_in "equations", :with => "x = 4!"
+    click_button "Solve!"
+    assert_contain "The equations could not be solved."
+  end
+  
   private
   def strip_html_tags(html)
     html.gsub(/<[^>]+>/, '')
