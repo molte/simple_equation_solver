@@ -150,4 +150,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => 1
     solution "x = 1"
   end
+  
+  equation_system :with_thousand_separators do
+    equation "1,234,567.89 = 1 000 * x"
+    
+    solution 'x' => Rational(123_456_789, 100_000)
+    solution "x = 123456789/100000"
+  end
 end

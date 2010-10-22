@@ -1,7 +1,7 @@
 class EquationSystem
   class ExpressionParser
     TERM_END = /\)|[+-]|\z/
-    NUMBER   = /\d+(?:[,\.]\d+)?/
+    NUMBER   = /\d+(?:[,\.]\d+)*/
     
     attr_reader :variables
     
