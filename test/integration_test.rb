@@ -62,6 +62,16 @@ class ApplicationTest < Test::Unit::TestCase
     assert_contain "Solution: a = 4, b = 3"
   end
   
+  def test_invalid_syntax
+    fill_in "equations", :with => "x = 2 * (-1)"
+    click_button "Solve!"
+    assert response_text.include?("Solution: x = &minus;2")
+    
+    fill_in "equations", :with => "x = 2 * -1"
+    click_button "Solve!"
+    assert_contain "The equations could not be solved."
+  end
+  
   private
   def strip_html_tags(html)
     html.gsub(/<[^>]+>/, '')

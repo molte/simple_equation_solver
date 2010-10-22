@@ -76,8 +76,11 @@ class EquationSystem
     def parse_expression(expression, negate = false)
       @cache = [ExpressionValue.new(0, negate ? -1 : 1)]
       add_nesting_level
+      expression.gsub!(/\s/, '')
       
-      ScanInstructor.scan(expression.gsub(/\s/, '')) do |s|
+      raise("Syntax error: Operators cannot directly proceed each other.") if expression =~ /[-+*\/]{2}/
+      
+      ScanInstructor.scan(expression) do |s|
         s.skip(/\*/)
         
         # Plus/minus sign -> Reset expression cache, and negate if minus.
