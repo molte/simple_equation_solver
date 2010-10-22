@@ -43,6 +43,6 @@ end
 class Hash
   # Iterates through each value of the hash and replaces it with the result of the given block.
   def map_values
-    inject({}) { |hash, (key, value)| hash[key] = yield(value) }
+    inject({}) { |hash, (key, value)| hash[key] = yield(value); hash }
   end
 end
