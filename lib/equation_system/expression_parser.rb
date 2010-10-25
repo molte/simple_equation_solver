@@ -1,7 +1,9 @@
 class EquationSystem
   class ExpressionParser
-    TERM_END = /\)|[+-]|\z/
-    NUMBER   = /\d+(?:[,\.]\d+)*/
+    TERM_END        = /\)|[+-]|\z/
+    POSITIVE_NUMBER = /\d+(?:[,\.]\d+)*/
+    NEGATIVE_NUMBER = /\(-#{POSITIVE_NUMBER}\)/
+    NUMBER          = /#{POSITIVE_NUMBER}|#{NEGATIVE_NUMBER}/
     
     attr_reader :variables
     
@@ -60,6 +62,7 @@ class EquationSystem
     
     # Parses a string decimal value into a Rational object.
     def parse_decimal(value)
+      return parse_decimal($1) * -1 if value.to_s =~ /\A\(-(.+)\)\z/
       value = value.to_s.split(/[,\.]/)
       Rational(value.join.to_i, (value.length > 1 ? 10 ** value[-1].length : 1))
     end
@@ -101,6 +104,7 @@ class EquationSystem
           @cache[-1].symbol = variable
         end
         
+        # Denominator -> Write to expression cache.
         s.at(/\/#{NUMBER}/) do |denominator|
           multiply_backwards(Rational(1) / parse_decimal(denominator[1..-1]))
         end

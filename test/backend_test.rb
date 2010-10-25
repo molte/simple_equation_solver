@@ -157,4 +157,11 @@ class EquationSolverTest < Test::Unit::TestCase
     solution 'x' => Rational(123_456_789, 100_000)
     solution "x = 123456789/100000"
   end
+  
+  equation_system :with_negative_numbers do
+    equation "x = (-7) - 2/(-1)"
+    
+    solution 'x' => -5
+    solution "x = -5"
+  end
 end
